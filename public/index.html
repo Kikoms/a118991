@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>金流付款示範頁面</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="container">
+    <h1>金流付款示範</h1>
+    <p>請輸入付款資訊，系統會依據後台設定的金流自動導向對應的付款頁面。</p>
+
+    <form id="payment-form" class="card">
+      <label>
+        付款金額 (TWD)
+        <input type="number" name="amount" min="1" step="1" required />
+      </label>
+      <label>
+        訂單描述
+        <input type="text" name="description" placeholder="例如：VIP方案" />
+      </label>
+      <label>
+        Email (選填)
+        <input type="email" name="email" placeholder="example@email.com" />
+      </label>
+      <button type="submit">送出並前往金流</button>
+    </form>
+
+    <section id="payment-result" class="hidden card"></section>
+  </main>
+
+  <script>
+    const paymentForm = document.getElementById('payment-form');
+    const paymentResult = document.getElementById('payment-result');
+
+    paymentForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      paymentResult.classList.add('hidden');
+      const formData = new FormData(paymentForm);
+      const payload = {
+        amount: Number(formData.get('amount')),
+        description: formData.get('description'),
+        customerEmail: formData.get('email')
+      };
+
+      try {
+        const response = await fetch('/api/payments', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || '建立付款連結失敗');
+        }
+
+        const data = await response.json();
+        paymentResult.innerHTML = `
+          <h2>訂單建立成功</h2>
+          <p>訂單編號：<strong>${data.orderId}</strong></p>
+          <p>金流平台：<strong>${data.provider.name}</strong></p>
+          <button id="redirect-btn" class="primary">前往付款頁面</button>
+        `;
+        paymentResult.classList.remove('hidden');
+
+        document.getElementById('redirect-btn').addEventListener('click', () => {
+          window.location.href = data.redirectUrl;
+        });
+      } catch (error) {
+        paymentResult.innerHTML = `<p class="error">${error.message}</p>`;
+        paymentResult.classList.remove('hidden');
+      }
+    });
+  </script>
+</body>
+</html>

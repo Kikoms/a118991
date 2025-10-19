@@ -1,0 +1,23 @@
+{
+  "name": "a118991",
+  "version": "1.0.0",
+  "description": "Sample Node.js payment gateway configuration demo",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node src/server.js",
+    "test": "echo \"No automated tests configured\" && exit 0"
+  },
+  "keywords": [
+    "node",
+    "payment"
+  ],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
+  }
+}
