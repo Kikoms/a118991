@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>金流後台設定</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="container">
+    <h1>金流串接後台</h1>
+    <p>選擇要設定的金流平台，填入商店名稱與對應的金鑰資訊，即可儲存並切換前台使用的金流。</p>
+
+    <form id="provider-form" class="card">
+      <label>
+        金流平台
+        <select name="provider" id="provider-select"></select>
+      </label>
+      <label>
+        商店名稱
+        <input type="text" name="storeName" required />
+      </label>
+      <label>
+        Merchant ID / 商店代號
+        <input type="text" name="merchantId" required />
+      </label>
+      <label>
+        API Key / Hash Key
+        <input type="text" name="apiKey" required />
+      </label>
+      <label>
+        金流付款網址
+        <input type="url" name="paymentUrl" placeholder="https://..." required />
+      </label>
+      <div class="checkbox">
+        <input type="checkbox" id="make-active" name="makeActive" />
+        <label for="make-active">儲存後同時設為預設金流</label>
+      </div>
+      <button type="submit">儲存設定</button>
+    </form>
+
+    <section class="card" id="active-provider">
+      <h2>目前預設金流</h2>
+      <p id="active-provider-info">尚未設定</p>
+      <button id="set-active-btn" class="secondary" disabled>設為預設金流</button>
+    </section>
+  </main>
+
+  <script>
+    const providerSelect = document.getElementById('provider-select');
+    const providerForm = document.getElementById('provider-form');
+    const makeActiveCheckbox = document.getElementById('make-active');
+    const activeProviderInfo = document.getElementById('active-provider-info');
+    const setActiveBtn = document.getElementById('set-active-btn');
+
+    let supportedProviders = {};
+    let providerCache = {};
+
+    async function loadProviders() {
+      try {
+        const response = await fetch('/api/providers');
+        if (!response.ok) throw new Error('無法取得金流資料');
+        const data = await response.json();
+        supportedProviders = data.supportedProviders;
+        providerCache = {};
+        providerSelect.innerHTML = '';
+
+        Object.entries(supportedProviders).forEach(([code, info]) => {
+          const option = document.createElement('option');
+          option.value = code;
+          option.textContent = info.label;
+          providerSelect.appendChild(option);
+        });
+
+        data.providers.forEach((provider) => {
+          providerCache[provider.provider_code] = provider;
+        });
+
+        const activeProvider = data.providers.find((item) => item.is_active === 1);
+        const providerCodes = Object.keys(supportedProviders);
+        let selectedCode = activeProvider?.provider_code || providerSelect.value;
+        if (!selectedCode && providerCodes.length > 0) {
+          selectedCode = providerCodes[0];
+        }
+        if (selectedCode && supportedProviders[selectedCode]) {
+          providerSelect.value = selectedCode;
+          fillForm(selectedCode);
+        } else {
+          fillForm('');
+        }
+
+        updateActiveProvider();
+      } catch (error) {
+        activeProviderInfo.textContent = error.message;
+      }
+    }
+
+    function fillForm(code) {
+      const provider = providerCache[code];
+      providerForm.storeName.value = provider?.store_name || '';
+      providerForm.merchantId.value = provider?.merchant_id || '';
+      providerForm.apiKey.value = provider?.api_key || '';
+      providerForm.paymentUrl.value = provider?.payment_url || '';
+      makeActiveCheckbox.checked = false;
+      setActiveBtn.disabled = !provider;
+      setActiveBtn.dataset.providerCode = code;
+    }
+
+    async function updateActiveProvider() {
+      try {
+        const response = await fetch('/api/active-provider');
+        if (!response.ok) throw new Error('尚未設定預設金流');
+        const data = await response.json();
+        const provider = data.provider;
+        providerCache[provider.provider_code] = provider;
+        activeProviderInfo.textContent = `${supportedProviders[provider.provider_code]?.label || provider.provider_code}（商店：${provider.store_name}）`;
+      } catch (error) {
+        activeProviderInfo.textContent = error.message;
+      }
+    }
+
+    providerSelect.addEventListener('change', (event) => {
+      fillForm(event.target.value);
+    });
+
+    providerForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const formData = new FormData(providerForm);
+      const payload = {
+        providerCode: formData.get('provider'),
+        storeName: formData.get('storeName'),
+        merchantId: formData.get('merchantId'),
+        apiKey: formData.get('apiKey'),
+        paymentUrl: formData.get('paymentUrl'),
+        makeActive: formData.get('makeActive') === 'on'
+      };
+
+      try {
+        const response = await fetch('/api/providers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || '儲存失敗');
+        }
+        const data = await response.json();
+        providerCache[data.provider.provider_code] = data.provider;
+        fillForm(payload.providerCode);
+        await updateActiveProvider();
+        alert('儲存成功');
+      } catch (error) {
+        alert(error.message);
+      }
+    });
+
+    setActiveBtn.addEventListener('click', async () => {
+      const providerCode = setActiveBtn.dataset.providerCode;
+      if (!providerCode) return;
+      try {
+        const response = await fetch('/api/active-provider', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ providerCode })
+        });
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || '設定失敗');
+        }
+        await updateActiveProvider();
+        alert('已更新預設金流');
+      } catch (error) {
+        alert(error.message);
+      }
+    });
+
+    loadProviders();
+  </script>
+</body>
+</html>
