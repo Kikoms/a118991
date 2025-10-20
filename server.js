@@ -5,6 +5,7 @@ const compression = require('compression');
 const path = require('path');
 const { initializeDatabase, updateEnvFile } = require('./scripts/init-database');
 const { securityMiddleware, rateLimitProtection } = require('./middleware/security');
+const { cleanupExpired } = require('./services/tempEmailService');
 require('dotenv').config();
 
 const app = express();
@@ -75,6 +76,12 @@ async function startServer() {
             console.log(`✓ 域名: https://2kez.xyz (需設定反向代理)`);
             console.log(`========================================\n`);
         });
+
+        setInterval(() => {
+            cleanupExpired().catch((error) => {
+                console.error('臨時信箱清理失敗:', error);
+            });
+        }, 5 * 60 * 1000).unref();
     } catch (error) {
         console.error('✗ 伺服器啟動失敗:', error);
         process.exit(1);

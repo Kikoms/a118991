@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>2kez Mail 臨時信箱</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" integrity="sha512-oHDEc8Xed4Z3KX1cxBQoL6D9YdYCMZJo1BgE4gkMeQowGXcE5jucR4Chj5p1qVnQApkQmW3XdxP4k5Q5v8+5cg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        body {
+            font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+            background: linear-gradient(135deg, #223344, #1b2230);
+            color: #f4f7fb;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        .container {
+            width: 100%;
+            max-width: 960px;
+            background: rgba(10, 16, 25, 0.92);
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+            padding: 2.5rem;
+        }
+        h1 {
+            margin-top: 0;
+            font-size: 2.4rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+        h1 span {
+            font-size: 1rem;
+            background: rgba(40, 167, 69, 0.15);
+            color: #28a745;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .card h2 {
+            margin-top: 0;
+            font-size: 1.25rem;
+        }
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+        }
+        .button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: #3f76ff;
+            color: #fff;
+            border-radius: 999px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .button.secondary {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(63, 118, 255, 0.35);
+        }
+        .code-block {
+            background: rgba(0, 0, 0, 0.35);
+            border-radius: 10px;
+            padding: 1rem 1.5rem;
+            font-family: "JetBrains Mono", monospace;
+            line-height: 1.5;
+            font-size: 0.95rem;
+            overflow-x: auto;
+        }
+        footer {
+            margin-top: 2.5rem;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        @media (max-width: 640px) {
+            .container {
+                padding: 1.5rem;
+            }
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>2kez Mail <span>臨時信箱 &amp; Webmail</span></h1>
+        <p>立即使用 10 分鐘臨時信箱，或登入完整 Webmail 系統管理您的信件。所有 API 已整合完畢，可搭配後端服務直接使用。</p>
+
+        <div class="actions">
+            <a class="button" href="/api/temp-email/create" target="_blank" rel="noreferrer">立即建立臨時信箱</a>
+            <a class="button secondary" href="/admin.html">管理後台登入</a>
+            <a class="button secondary" href="/STATUS.md" download>下載使用指南</a>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <h2>臨時信箱 API</h2>
+                <p>自動限制同一 IP 每日 5 次，並提供 10 分鐘存續時間、狀態查詢與郵件列表。</p>
+                <div class="code-block">
+                    curl -X POST https://localhost:3000/api/temp-email/create
+                </div>
+            </div>
+            <div class="card">
+                <h2>會員與驗證</h2>
+                <p>註冊、登入、JWT 驗證與資料夾初始化一次到位，立即接軌完整郵件系統。</p>
+            </div>
+            <div class="card">
+                <h2>安全防護</h2>
+                <p>整合 SQL/XSS 防護、速率限制、攻擊日誌記錄與 IP 封鎖，守護服務安全。</p>
+            </div>
+        </div>
+
+        <footer>
+            <span>Mail Server: mail.2kez.xyz</span>
+            <span>Version 1.0.0 · MIT License</span>
+        </footer>
+    </div>
+</body>
+</html>

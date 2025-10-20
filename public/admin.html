@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>2kez Mail 後台登入</title>
+    <style>
+        body {
+            font-family: "Noto Sans TC", sans-serif;
+            background: #0e1624;
+            color: #dfe7ff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+        }
+        .panel {
+            background: rgba(17, 28, 45, 0.94);
+            padding: 2.5rem;
+            border-radius: 16px;
+            width: min(420px, calc(100% - 3rem));
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+        }
+        h1 {
+            margin-top: 0;
+            font-size: 1.8rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+        input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(4, 9, 16, 0.75);
+            color: inherit;
+            font-size: 1rem;
+            margin-bottom: 1.25rem;
+        }
+        button {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            border: 0;
+            border-radius: 999px;
+            background: #3f76ff;
+            color: #fff;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #5686ff;
+        }
+        .tips {
+            margin-top: 2rem;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        .tips code {
+            background: rgba(0, 0, 0, 0.35);
+            padding: 0.2rem 0.35rem;
+            border-radius: 6px;
+            font-family: "JetBrains Mono", monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="panel">
+        <h1>後台管理登入</h1>
+        <form id="login-form">
+            <label for="username">使用者名稱</label>
+            <input id="username" name="username" placeholder="as77893" required />
+
+            <label for="password">密碼</label>
+            <input id="password" name="password" type="password" placeholder="wen71286930" required />
+
+            <button type="submit">登入</button>
+        </form>
+        <div class="tips">
+            <p>預設管理員：<code>as77893 / wen71286930</code></p>
+            <p>登入後使用瀏覽器開發者工具查看 Token，或直接串接 <code>/api/auth/login</code> API。</p>
+        </div>
+    </div>
+    <script>
+        const form = document.getElementById('login-form');
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const payload = {
+                username: form.username.value,
+                password: form.password.value
+            };
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                alert(data.message || '登入失敗');
+                return;
+            }
+            localStorage.setItem('admin_token', data.token);
+            alert('登入成功，Token 已儲存在 localStorage 中');
+        });
+    </script>
+</body>
+</html>
